@@ -6,7 +6,7 @@ scope:
         - "Germany"
     bounds:
         x_min: 5 # in degrees east
-        x_max: 15  # in degrees east
+        x_max: 15.1  # in degrees east
         y_min: 47  # in degrees north
         y_max: 55.2  # in degrees north
 layers:
