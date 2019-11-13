@@ -278,25 +278,17 @@ rule raw_bathymetry:
 rule elevation_in_europe:
     message: "Merge SRTM and GMTED elevation data and warp/clip to Europe using {threads} threads."
     input:
-        gmted = rules.raw_gmted_elevation_data.output,
         srtm = rules.raw_srtm_elevation_data.output
     output:
         temp("build/elevation-europe.tif")
     params:
-        srtm_bounds = "{x_min},{y_min},{x_max},60".format(**config["scope"]["bounds"]),
+        srtm_bounds = "{x_min},{y_min},{x_max},{y_max}".format(**config["scope"]["bounds"]),
         gmted_bounds = "{x_min},59.5,{x_max},{y_max}".format(**config["scope"]["bounds"])
     threads: config["snakemake"]["max-threads"]
     conda: "../envs/default.yaml"
     shell:
         """
-        rio clip --bounds {params.srtm_bounds} {input.srtm} -o build/tmp-srtm.tif
-        rio clip --bounds {params.gmted_bounds} {input.gmted} -o build/tmp-gmted.tif
-        rio warp build/tmp-gmted.tif -o build/tmp-gmted2.tif -r {RESOLUTION_SLOPE} \
-        --resampling nearest --threads {threads}
-        rio merge build/tmp-srtm.tif build/tmp-gmted2.tif {output}
-        rm build/tmp-gmted.tif
-        rm build/tmp-gmted2.tif
-        rm build/tmp-srtm.tif
+        rio clip --bounds {params.srtm_bounds} {input.srtm} -o {output}
         """
 
 

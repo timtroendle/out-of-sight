@@ -24,10 +24,10 @@ onstart:
     shell("mkdir -p build/logs")
 onsuccess:
     if "email" in config.keys():
-        shell("echo "" | mail -s 'possibility-for-electricity-autarky succeeded' {config[email]}")
+        shell("echo "" | mail -s 'out-of-sight succeeded' {config[email]}")
 onerror:
     if "email" in config.keys():
-        shell("echo "" | mail -s 'possibility-for-electricity-autarky crashed' {config[email]}")
+        shell("echo "" | mail -s 'out-of-sight crashed' {config[email]}")
 
 
 rule all:
