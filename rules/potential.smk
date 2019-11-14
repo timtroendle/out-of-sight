@@ -94,7 +94,7 @@ rule buffer_buildings_high_resolution:
         "Buffer buildings of cell N{wildcards.north}E{wildcards.east} using squared distance of {wildcards.distance} m."
     input:
         src = "src/buffer_buildings.py",
-        esm = "data/esm/200km_2p5m_N{north}E{east}/200km_2p5m_N{north}E{east}.TIF"
+        esm = "build/esm/200km_2p5m_N{north}E{east}_filtered.tif"
     output: temp("build/buffered-buildings-2p5m-N{north}E{east}-{distance}m.tif")
     conda: "../envs/default.yaml"
     script: "../src/buffer_buildings.py"

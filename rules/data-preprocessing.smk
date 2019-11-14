@@ -389,6 +389,16 @@ rule settlements:
         """
 
 
+rule filter_2p5m_esm:
+    message: "Filter incorrectly identified buildings in ESM N{wildcards.north}E{wildcards.east}."
+    input:
+        src = "src/filter_esm.py",
+        esm = "data/esm/200km_2p5m_N{north}E{east}/200km_2p5m_N{north}E{east}.TIF"
+    output: "build/esm/200km_2p5m_N{north}E{east}_filtered.tif"
+    conda: "../envs/default.yaml"
+    script: "../src/filter_esm.py"
+
+
 rule bathymetry_in_europe:
     message: "Clip bathymetric data to study area and warp to study resolution."
     input:

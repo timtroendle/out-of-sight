@@ -38,3 +38,6 @@ buffer_buildings_in_europe:
     memory: 128000
     runtime: 120
     cores: 4
+filter_2p5m_esm:
+    memory: 48000
+    runtime: 60
