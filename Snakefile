@@ -7,14 +7,13 @@ CONFIG_FILE = "config/default.yaml"
 
 configfile: CONFIG_FILE
 include: "rules/data-preprocessing.smk"
-include: "rules/sonnendach.smk"
 include: "rules/capacityfactors.smk"
 include: "rules/potential.smk"
 include: "rules/analysis.smk"
 include: "rules/publish-data.smk"
 include: "rules/sync.smk"
 
-localrules: all, paper, supplementary_material, clean
+localrules: all, paper, clean
 
 wildcard_constraints:
     layer = "({layer_list})".format(layer_list="|".join((f"({layer})" for layer in config["layers"]))),
@@ -98,32 +97,6 @@ rule paper:
         """
 
 
-rule supplementary_material:
-    message: "Compile the supplementary material."
-    input:
-        GENERAL_DOCUMENT_DEPENDENCIES,
-        "report/supplementary.md",
-        "report/data-sources.csv",
-        rules.sonnendach_statistics.output.publish,
-        expand(
-            "build/exclusion-layers-{country_code}.png",
-            country_code=[pycountry.countries.lookup(country).alpha_3
-                          for country in config["scope"]["countries"]]
-        ),
-        "build/national/technical-potential/potentials-polished.csv",
-        "build/national/technical-social-potential/potentials-polished.csv"
-    params: options = pandoc_options
-    output: "build/supplementary-material.{suffix}"
-    shadow: "minimal"
-    conda: "envs/report.yaml"
-    shell:
-        """
-        cd report
-        ln -s ../build .
-        {PANDOC} supplementary.md {params.options} -o {output} --table-of-contents
-        """
-
-
 rule clean: # removes all generated results
     shell:
         """
@@ -140,8 +113,6 @@ rule test:
         "build/technically-eligible-area-km2.tif",
         "build/technically-eligible-electricity-yield-pv-prio-twh.tif",
         "build/administrative-borders-nuts.gpkg",
-        "build/swiss/total-rooftop-area-according-to-sonnendach-data-km2.txt",
-        "build/swiss/total-yield-according-to-sonnendach-data-twh.txt"
     output: "build/logs/test-report.html"
     conda: "envs/default.yaml"
     shell:

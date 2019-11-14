@@ -10,7 +10,6 @@ CONFIG_FILE = "config/default.yaml"
 configfile: CONFIG_FILE
 
 include: "../Snakefile"
-include: "sonnendach.smk"
 
 
 rule ninja_simulation_input:
@@ -26,7 +25,7 @@ rule pv_simulation_points:
     input:
         "src/capacityfactors/ninja_input_pv.py",
         "build/continental/units.geojson",
-        rules.sonnendach_statistics.output.raw
+        "data/roof-statistics.csv"
     output:
         points = "build/capacityfactors/ninja-input-pv.csv",
     conda: "../envs/default.yaml"

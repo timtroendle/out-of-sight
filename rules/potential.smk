@@ -24,66 +24,6 @@ rule category_of_technical_eligibility:
         PYTHON_SCRIPT + " {CONFIG_FILE}"
 
 
-rule total_size_swiss_building_footprints_according_to_settlement_data:
-    message: "Sum the size of building footprints from settlement data."
-    input:
-        building_footprints = rules.settlements.output.buildings,
-        eligibility = "build/technically-eligible-land.tif",
-        countries = rules.administrative_borders_nuts.output[0]
-    output:
-        "build/building-footprints-according-to-settlement-data-km2.txt"
-    run:
-        import rasterio
-        import fiona
-        from rasterstats import zonal_stats
-        import pandas as pd
-        import geopandas as gpd
-
-        from src.technical_eligibility import Eligibility
-        from src.conversion import area_in_squaremeters
-
-        with rasterio.open(input.eligibility, "r") as f_eligibility:
-            eligibility = f_eligibility.read(1)
-        with rasterio.open(input.building_footprints, "r") as f_building_share:
-            building_share = f_building_share.read(1)
-            transform = f_building_share.transform
-        building_share[eligibility != Eligibility.ROOFTOP_PV] = 0
-
-        with fiona.open(input.countries, "r", layer="nuts0") as src:
-            zs = zonal_stats(
-                vectors=src,
-                raster=building_share,
-                affine=transform,
-                stats="mean",
-                nodata=-999
-            )
-            building_share = pd.Series(
-                index=[feat["properties"]["id"] for feat in src],
-                data=[stat["mean"] for stat in zs]
-            )
-        building_footprint_km2 = area_in_squaremeters(gpd.read_file(input.countries).set_index("id")).div(1e6) * building_share
-        swiss_building_footprint = building_footprint_km2.loc["CHE"]
-        with open(output[0], "w") as f_out:
-            f_out.write(f"{swiss_building_footprint}")
-
-
-rule correction_factor_building_footprint_to_available_rooftop:
-    message: "Determine the factor that maps from building footprints to available rooftop area for CHE."
-    input:
-        rooftops = rules.total_size_swiss_rooftops_according_to_sonnendach_data.output[0],
-        building_footprints = rules.total_size_swiss_building_footprints_according_to_settlement_data.output[0]
-    output:
-        "build/ratio-esm-available.txt"
-    run:
-        with open(input.rooftops, "r") as f_in:
-            rooftops = float(f_in.read())
-        with open(input.building_footprints, "r") as f_in:
-            building_footprints = float(f_in.read())
-        ratio = rooftops / building_footprints
-        with open(output[0], "w") as f_out:
-            f_out.write(f"{ratio:.3f}")
-
-
 rule capacityfactor_of_technical_eligibility:
     message:
         "Determine capacityfactor of eligibility category."
@@ -109,7 +49,7 @@ rule area_of_technical_eligibility:
         "src/technically_eligible_area.py",
         rules.category_of_technical_eligibility.output,
         rules.settlements.output.buildings,
-        rules.correction_factor_building_footprint_to_available_rooftop.output
+        "data/ratio-esm-available.txt"
     output:
         "build/technically-eligible-area-km2.tif"
     conda: "../envs/default.yaml"
@@ -124,7 +64,7 @@ rule capacity_of_technical_eligibility:
         "src/technically_eligible_capacity.py",
         rules.category_of_technical_eligibility.output,
         rules.area_of_technical_eligibility.output,
-        rules.sonnendach_statistics.output.raw
+        "data/roof-statistics.csv"
     output:
         "build/technically-eligible-capacity-pv-prio-mw.tif",
         "build/technically-eligible-capacity-wind-prio-mw.tif",
