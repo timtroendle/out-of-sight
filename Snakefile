@@ -33,16 +33,8 @@ onerror:
 rule all:
     message: "Run entire analysis and compile report."
     input:
-        "build/paper-600dpi.docx",
-        "build/supplementary-material.pdf",
-        "build/logs/test-report.html",
-        "build/technical-potential/normed-potentials-boxplots.tif",
-        "build/technical-potential/sufficient-potentials-map.tif",
-        "build/technical-social-potential/sufficient-potentials-map.tif",
-        "build/technical-social-potential/normed-potentials-boxplots.tif",
-        "build/necessary-land/necessary-land-map-when-pv-40%.tif",
-        "build/necessary-land/necessary-land-all-layers.tif",
-        "build/exclusion-layers-ROU.tif",
+        rules.wind_capacity_per_distance_plot.output,
+        rules.wind_capacity_per_distance_map.output
 
 
 GENERAL_DOCUMENT_DEPENDENCIES = [

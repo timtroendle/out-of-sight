@@ -248,3 +248,36 @@ rule scenarios_overview:
             population[(pot < demand) & ~high_density].sum() / population[~high_density].sum() for pot in potentials
         ]
         overview.to_csv(output[0], header=True, float_format="%.4f")
+
+
+rule wind_capacity_per_distance_plot:
+    message: "Visualise the dependency between wind capacity and distance."
+    input:
+        "src/vis/wind_capacity.py",
+        results = expand(
+            "build/{layer}/{scenario}/{distance}/capacities.csv",
+            scenario=["technical-potential", "technical-social-potential"],
+            layer=["national"],
+            distance=[600, 800, 1000, 1200]
+        )
+    output:
+        "build/wind-capacity-per-distance.png"
+    conda: "../envs/default.yaml"
+    script: "../src/vis/wind_capacity.py"
+
+
+rule wind_capacity_per_distance_map:
+    message: "Visualise the dependency between wind capacity and distance on a map."
+    input:
+        "src/vis/wind_capacity_map.py",
+        results = expand(
+            "build/{layer}/{scenario}/{distance}/capacities.csv",
+            scenario=["technical-social-potential"],
+            layer=["regional", "municipal"],
+            distance=[600, 1000]
+        ),
+        regions = "build/regional/units.geojson",
+        municipalities = "build/municipal/units.geojson"
+    output: "build/wind-capacity-per-distance-map.png"
+    conda: "../envs/default.yaml"
+    script: "../src/vis/wind_capacity_map.py"

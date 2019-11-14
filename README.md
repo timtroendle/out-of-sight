@@ -1,12 +1,10 @@
-# Possibility for renewable electricity autarky in Europe
+# Out of sight
 
-Is your European region able to provide itself with 100% renewable electricity?
+How does distance to settlements change potential of windpower in Germany?
 
 This repository contains the entire research project, including code and report. The philosophy behind this repository is that no intermediary results are included, but all results are computed from raw data and code.
 
-[![article DOI](https://img.shields.io/badge/article-10.1016%2Fj.esr.2019.100388-blue)](https://doi.org/10.1016/j.esr.2019.100388)
-[![data DOI](https://img.shields.io/badge/data-10.5281%2Fzenodo.3244985-blue)](https://doi.org/10.5281/zenodo.3244985)
-[![code DOI](https://img.shields.io/badge/code-10.5281%2Fzenodo.3246303-blue)](https://doi.org/10.5281/zenodo.3246303)
+This repository is a spin-off (fork) of [a related study](https://github.com/timtroendle/possibility-for-electricity-autarky). It may contain traces of things that do not belong here because of its origin.
 
 ## Getting ready
 
@@ -29,6 +27,7 @@ Don't forget to activate the environment. To see what you can do now, run:
 Whenever possible, data is downloaded automatically. As this is not always possible, you will need to retrieve the following data sets manually:
 
 * [European Settlement Map 2012, Release 2017, 100m](https://land.copernicus.eu/pan-european/GHSL/european-settlement-map), to be placed at `./data/esm-100m-2017/`
+* [European Settlement Map 2012, Release 2017, 2.5m](https://land.copernicus.eu/pan-european/GHSL/european-settlement-map) (all tiles covering Germany), to be placed at `./data/esm/`
 * [World Exclusive Economic Zones v10](http://www.marineregions.org/downloads.php), to be placed in `./data/World_EEZ_v10_20180221`
 * [Sonnendach.ch 2018-08-27](http://www.sonnendach.ch), to be placed in `./data/sonnendach/SOLKAT_20180827.gdb`
 * [Federal Register of Buildings and Dwellings (RBD/GWR) 2018-07-01](https://www.bfs.admin.ch/bfs/en/home/registers/federal-register-buildings-dwellings.html), to be placed in `./data/gwr/`

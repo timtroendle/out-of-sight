@@ -149,6 +149,38 @@ rule electricity_yield_of_technical_eligibility:
         PYTHON_SCRIPT
 
 
+rule buffer_buildings_high_resolution:
+    message:
+        "Buffer buildings of cell N{wildcards.north}E{wildcards.east} using squared distance of {wildcards.distance} m."
+    input:
+        src = "src/buffer_buildings.py",
+        esm = "data/esm/200km_2p5m_N{north}E{east}/200km_2p5m_N{north}E{east}.TIF"
+    output: temp("build/buffered-buildings-2p5m-N{north}E{east}-{distance}m.tif")
+    conda: "../envs/default.yaml"
+    script: "../src/buffer_buildings.py"
+
+
+rule buffer_buildings_in_europe:
+    message: "Merge building buffer data to study area and warp to study resolution."
+    input:
+        high_res = expand(
+            "build/buffered-buildings-2p5m-N{north}E{east}-{{distance}}m.tif",
+            north=[28, 30, 32, 34, 36],
+            east=[40, 42, 44]
+        ) + ["build/buffered-buildings-2p5m-N32E46-{distance}m.tif"],
+        reference = rules.land_cover_in_europe.output
+    output: "build/buildings-buffer-{distance}m-europe.tif"
+    conda: "../envs/default.yaml"
+    threads: config["snakemake"]["max-threads"]
+    shadow: "minimal"
+    shell:
+        """
+        rio merge {input.high_res} -o build/tmp-buffer.tif
+        rio warp build/tmp-buffer.tif -o {output} --like {input.reference} \
+        --resampling average --threads {threads}
+        """
+
+
 rule units:
     message: "Form units of layer {wildcards.layer} by remixing NUTS, LAU, and GADM."
     input:
@@ -333,9 +365,10 @@ rule capacities:
         rules.electricity_yield_of_technical_eligibility.output,
         rules.category_of_technical_eligibility.output,
         rules.land_cover_in_europe.output,
-        rules.protected_areas_in_europe.output
+        rules.protected_areas_in_europe.output,
+        rules.buffer_buildings_in_europe.output
     output:
-        "build/{layer}/{scenario}/capacities.csv"
+        "build/{layer}/{scenario}/{distance}/capacities.csv"
     conda: "../envs/default.yaml"
     shell:
         PYTHON_SCRIPT + " {wildcards.scenario} {CONFIG_FILE}"
