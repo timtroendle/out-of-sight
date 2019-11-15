@@ -278,6 +278,8 @@ rule wind_capacity_per_distance_map:
         ),
         regions = "build/regional/units.geojson",
         municipalities = "build/municipal/units.geojson"
-    output: "build/wind-capacity-per-distance-map.png"
+    output:
+        germany = "build/wind-capacity-per-distance-map-germany.png",
+        brandenburg = "build/wind-capacity-per-distance-map-brandenburg.png"
     conda: "../envs/default.yaml"
     script: "../src/vis/wind_capacity_map.py"
