@@ -108,14 +108,6 @@ def distance(path_to_result):
     return path_to_result.split("/")[-2]
 
 
-def potential(path_to_result):
-    pot = pd.read_csv(path_to_result).loc[:, "onshore_wind_mw"]
-    if pottype(path_to_result) == "considering environmental protection":
-        return pot * 10
-    else:
-        return pot
-
-
 def plot_layer(units, layer_name, panel_id, edge_width, bounding_box, ax):
     ax.set_aspect('equal')
     invalids = units[units.reduced_potential.isna()]

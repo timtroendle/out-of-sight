@@ -2,6 +2,9 @@ import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 
+RED = "#A01914"
+BLUE = "#4F6DB8"
+
 
 def plot_wind_capacity_per_distance(paths_to_results, path_to_plot):
     sns.set_context('paper')
@@ -21,6 +24,7 @@ def plot_wind_capacity_per_distance(paths_to_results, path_to_plot):
         x="distance_m",
         y="onshore_potential",
         hue="potential_type",
+        palette=[RED, BLUE],
         ax=ax
     )
     fig.savefig(path_to_plot, dpi=600, transparent=False)
@@ -39,11 +43,7 @@ def distance(path_to_result):
 
 
 def potential(path_to_result):
-    pot = pd.read_csv(path_to_result).loc[0, "onshore_wind_mw"]
-    if pottype(path_to_result) == "considering environmental protection":
-        return pot * 10
-    else:
-        return pot
+    return pd.read_csv(path_to_result).loc[0, "onshore_wind_mw"]
 
 
 if __name__ == "__main__":

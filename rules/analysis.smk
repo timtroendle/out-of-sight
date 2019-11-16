@@ -64,36 +64,6 @@ rule potentials_sufficiency_map:
         PYTHON_SCRIPT
 
 
-rule necessary_land_plot_all_layers:
-    message: "Plot the fraction of land needed to become autarkic in scenario {wildcards.scenario}."
-    input:
-        "src/vis/necessary_land_all_layers.py",
-        expand("build/{layer}/{{scenario}}/necessary-land-when-pv-{pvshare}%.csv",
-               layer=config["layers"].keys(),
-               pvshare=config["paper"]["pv-shares"]),
-        expand("build/{layer}/population.csv", layer=config["layers"].keys()),
-    output:
-        "build/{scenario}/necessary-land-all-layers.{plot_suffix}"
-    conda: "../envs/default.yaml"
-    shell:
-        PYTHON_SCRIPT
-
-
-rule necessary_land_map:
-    message: "Plot maps of land needed to become autarkic in scenario {wildcards.scenario} "
-             "for rooftop PV share {wildcards.pvshare}%."
-    input:
-        "src/vis/necessary_land_map.py",
-        expand("build/{layer}/units.geojson", layer=config["layers"].keys()),
-        expand("build/{layer}/{{scenario}}/necessary-land-when-pv-{{pvshare}}%.csv", layer=config["layers"].keys()),
-        expand("build/{layer}/population.csv", layer=config["layers"].keys())
-    output:
-        "build/{scenario}/necessary-land-map-when-pv-{pvshare}%.{plot_suffix}"
-    conda: "../envs/default.yaml"
-    shell:
-        PYTHON_SCRIPT
-
-
 rule exclusion_layers_plot:
     message: "Visualise the exclusion layers for {wildcards.country_code}."
     input:
@@ -180,83 +150,13 @@ rule scenario_overview:
         overview.fillna(0).transpose().to_csv(output[0], index=True, header=True, float_format="%.1f")
 
 
-rule scenarios_overview:
-    message: "Brief overview over results of all scenarios on the municipal level."
-    input:
-        potential = expand(
-            "build/municipal/{scenario}/potentials.csv",
-            scenario=config["paper"]["europe-level-results"]
-        ),
-        urbanisation = rules.lau2_urbanisation_degree.output[0],
-        population = "build/municipal/population.csv",
-        demand = "build/municipal/demand.csv"
-    output:
-        "build/municipal/overview-scenarios.csv"
-    run:
-        import pandas as pd
-
-        demand = pd.read_csv(input.demand, index_col=0)["demand_twh_per_year"]
-        industrial = pd.read_csv(input.demand, index_col=0)["industrial_demand_fraction"] > 0.5
-        population = pd.read_csv(input.population, index_col=0)["population_sum"].reindex(demand.index)
-        high_density = pd.read_csv(input.population, index_col=0)["density_p_per_km2"].reindex(demand.index) > 1000
-        potentials = [pd.read_csv(path, index_col=0).sum(axis=1).reindex(demand.index) for path in input.potential]
-        urbanisation = pd.read_csv(input.urbanisation, index_col=0)["urbanisation_class"].reindex(demand.index)
-        urban = urbanisation == 1
-        town = urbanisation == 2
-        rural = urbanisation == 3
-        classified = urban | town | rural
-        scenario_names = [path.split("/")[2] for path in input.potential]
-        overview = pd.DataFrame(
-            index=scenario_names,
-            columns=[
-                "unit share with insufficient supply",
-                "population share with insufficient supply",
-                "of which urban",
-                "of which town",
-                "of which rural",
-                "of which densely populated",
-                "of which in industrial area",
-                "high density pop affected",
-                "low density pop affected",
-            ]
-        )
-        overview["unit share with insufficient supply"] = [
-            population[pot < demand].count() / population.count() for pot in potentials
-        ]
-        overview["population share with insufficient supply"] = [
-            population[pot < demand].sum() / population.sum() for pot in potentials
-        ]
-        overview["of which urban"] = [
-            population[(pot < demand) & urban].sum() / population[(pot < demand) & classified].sum() for pot in potentials
-        ]
-        overview["of which town"] = [
-            population[(pot < demand) & town].sum() / population[(pot < demand) & classified].sum() for pot in potentials
-        ]
-        overview["of which rural"] = [
-            population[(pot < demand) & rural].sum() / population[(pot < demand) & classified].sum() for pot in potentials
-        ]
-        overview["of which densely populated"] = [
-            population[(pot < demand) & high_density].sum() / population[pot < demand].sum() for pot in potentials
-        ]
-        overview["of which in industrial area"] = [
-            population[(pot < demand) & industrial].sum() / population[pot < demand].sum() for pot in potentials
-        ]
-        overview["high density pop affected"] = [
-            population[(pot < demand) & high_density].sum() / population[high_density].sum() for pot in potentials
-        ]
-        overview["low density pop affected"] = [
-            population[(pot < demand) & ~high_density].sum() / population[~high_density].sum() for pot in potentials
-        ]
-        overview.to_csv(output[0], header=True, float_format="%.4f")
-
-
 rule wind_capacity_per_distance_plot:
     message: "Visualise the dependency between wind capacity and distance."
     input:
         "src/vis/wind_capacity.py",
         results = expand(
             "build/{layer}/{scenario}/{distance}/capacities.csv",
-            scenario=["technical-potential", "technical-social-potential"],
+            scenario=["technical-potential", "technical-potential-env-protection"],
             layer=["national"],
             distance=[600, 800, 1000, 1200]
         )
@@ -272,7 +172,7 @@ rule wind_capacity_per_distance_map:
         "src/vis/wind_capacity_map.py",
         results = expand(
             "build/{layer}/{scenario}/{distance}/capacities.csv",
-            scenario=["technical-social-potential"],
+            scenario=["technical-potential-env-protection"],
             layer=["regional", "municipal"],
             distance=[600, 1000]
         ),

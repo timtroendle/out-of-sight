@@ -4,7 +4,7 @@ localrules: prepare_everything_for_publication, copy
 
 LAYERS = config["layers"].keys()
 SCENARIOS = ["technical-potential", "technical-social-potential"]
-PV_SHARES = config["paper"]["pv-shares"]
+
 
 rule prepare_everything_for_publication:
     message: "Prepare all files for publication."
@@ -17,11 +17,6 @@ rule prepare_everything_for_publication:
         expand("build/publish/{layer}/{scenario}/capacities.csv", layer=LAYERS, scenario=SCENARIOS),
         expand("build/publish/{layer}/{scenario}/potentials.csv", layer=LAYERS, scenario=SCENARIOS),
         expand("build/publish/{layer}/{scenario}/normed-potentials.csv", layer=LAYERS, scenario=SCENARIOS),
-        expand(
-            "build/publish/{layer}/necessary-land/necessary-land-when-pv-{pvshare}%.csv",
-            layer=LAYERS,
-            pvshare=PV_SHARES
-        )
 
 
 rule copy:
