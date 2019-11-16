@@ -1,9 +1,10 @@
-import math
 import gc
 
 import numpy as np
 import rasterio
-import scipy.ndimage
+import rasterio.features
+import shapely
+import shapely.geometry
 
 
 BUILDING_CODE = 50
@@ -16,8 +17,7 @@ def buffer_buildings(path_to_esm, distance, path_to_output):
         esm = src.read(1)
         meta = src.meta
 
-    # TODO should use circles, but scipy function is extremely memory hungry
-    buffered = buffer_buildings_using_squares(esm, buffer_in_m=distance)
+    buffered = buffer_buildings_using_circles(esm, buffer_in_m=distance, transform=meta["transform"])
     del esm
     gc.collect() # immediately remove unnecessary data to avoid memory peaks
 
@@ -29,60 +29,22 @@ def buffer_buildings(path_to_esm, distance, path_to_output):
         dst.write(smaller)
 
 
-def buffer_buildings_using_circles(esm, buffer_in_m):
+def buffer_buildings_using_circles(esm, buffer_in_m, transform):
     mask = esm == BUILDING_CODE
-    filter_mask = circle_mask(math.ceil(buffer_in_m / RESOLUTION_IN_M))
-    # split array, because operation is too memory hungry
-    left, right = tuple(np.hsplit(mask, 2))
-    upper_left, lower_left = tuple(np.vsplit(left, 2))
-    upper_right, lower_right = tuple(np.vsplit(right, 2))
-    del left, right
-    # compute buffers
-    upper_left = buffer_parts_of_buildings_using_circles(upper_left, filter_mask)
-    upper_right = buffer_parts_of_buildings_using_circles(upper_right, filter_mask)
-    lower_left = buffer_parts_of_buildings_using_circles(lower_left, filter_mask)
-    lower_right = buffer_parts_of_buildings_using_circles(lower_right, filter_mask)
-    # restack subarrays
-    left = np.vstack((upper_left, lower_left))
-    right = np.vstack((upper_right, lower_right))
-    return np.hstack((left, right))
-
-
-def buffer_parts_of_buildings_using_circles(esm, filter_mask):
-    return scipy.ndimage.maximum_filter(
-        esm,
-        footprint=filter_mask,
-        mode='constant',
-        cval=0
+    shapes = rasterio.features.shapes(
+        mask.astype(np.uint8),
+        mask=mask,
+        transform=transform
     )
-
-
-def buffer_buildings_using_squares(esm, buffer_in_m):
-    mask = esm == BUILDING_CODE
-    return scipy.ndimage.maximum_filter(
-        mask,
-        size=math.ceil(buffer_in_m / RESOLUTION_IN_M) * 2 + 1,
-        mode='constant',
-        cval=0
+    shapes = ((shapely.geometry.shape(shape).buffer(buffer_in_m), value)
+              for shape, value in shapes)
+    return rasterio.features.rasterize(
+        shapes,
+        out_shape=esm.shape,
+        fill=0.0,
+        transform=transform,
+        dtype=np.uint8
     )
-
-
-# adapted from https://stackoverflow.com/a/18354475/1856079
-def circle_mask(radius):
-    """
-    Return a boolean mask for a circle.
-    """
-    matrix_size = radius * 2 + 1
-    x, y = np.ogrid[:matrix_size, :matrix_size]
-    cx, cy = radius, radius
-
-    # convert cartesian --> polar coordinates
-    r2 = (x - cx) * (x - cx) + (y - cy) * (y - cy)
-
-    # circular mask
-    circmask = r2 <= radius * radius
-
-    return circmask * 1
 
 
 def downsample(data, meta, scale):
