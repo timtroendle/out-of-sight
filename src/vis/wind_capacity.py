@@ -23,10 +23,11 @@ def plot_wind_capacity_per_distance(paths_to_results, path_to_plot):
         data=data,
         x="distance_m",
         y="onshore_potential",
-        hue="potential_type",
-        palette=[RED, BLUE],
+        palette=[BLUE],
         ax=ax
     )
+    ax.set_xlabel("Mindestabstand (m)")
+    ax.set_ylabel("Verfügbare Fläche relativ \nzu 600m Mindestabstand")
     fig.savefig(path_to_plot, dpi=600, transparent=False)
 
 

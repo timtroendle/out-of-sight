@@ -156,7 +156,7 @@ rule wind_capacity_per_distance_plot:
         "src/vis/wind_capacity.py",
         results = expand(
             "build/{layer}/{scenario}/{distance}/capacities.csv",
-            scenario=["technical-potential", "technical-potential-env-protection"],
+            scenario=["technical-potential-env-protection"],
             layer=["national"],
             distance=[600, 800, 1000, 1200]
         )

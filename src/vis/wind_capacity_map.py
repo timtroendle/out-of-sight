@@ -55,8 +55,8 @@ def plot_wind_capacity_per_distance_map(paths_to_results, path_to_regional_shape
 def plot_germany(regions, municipalities):
     fig = plt.figure(figsize=(8, 5), constrained_layout=True)
     axes = fig.subplots(1, 2).flatten()
-    plot_layer(regions, "Bundesländer", "a", 0.06, GERMANY_BOUNDING_BOX, axes[0])
-    plot_layer(municipalities, "Gemeinden", "b", 0.0125, GERMANY_BOUNDING_BOX, axes[1])
+    plot_layer(regions, "a - Bundesländer", 0.06, GERMANY_BOUNDING_BOX, axes[0])
+    plot_layer(municipalities, "b - Gemeinden", 0.0125, GERMANY_BOUNDING_BOX, axes[1])
     plot_colorbar(fig, axes)
     return fig
 
@@ -64,8 +64,8 @@ def plot_germany(regions, municipalities):
 def plot_brandenburg(regions, municipalities):
     fig = plt.figure(figsize=(8, 4), constrained_layout=True)
     axes = fig.subplots(1, 2).flatten()
-    plot_layer(regions, "Brandenburg", "a", 0.06, BRANDENBURG_BOUNDING_BOX, axes[0])
-    plot_layer(municipalities, "Gemeinden", "b", 0.0125, BRANDENBURG_BOUNDING_BOX, axes[1])
+    plot_layer(regions, "a – Brandenburg", 0.06, BRANDENBURG_BOUNDING_BOX, axes[0])
+    plot_layer(municipalities, "b - Gemeinden", 0.0125, BRANDENBURG_BOUNDING_BOX, axes[1])
     plot_colorbar(fig, axes)
     return fig
 
@@ -108,7 +108,7 @@ def distance(path_to_result):
     return path_to_result.split("/")[-2]
 
 
-def plot_layer(units, layer_name, panel_id, edge_width, bounding_box, ax):
+def plot_layer(units, panel_id, edge_width, bounding_box, ax):
     ax.set_aspect('equal')
     invalids = units[units.reduced_potential.isna()]
     units[~units.isin(invalids)].plot(
@@ -132,7 +132,6 @@ def plot_layer(units, layer_name, panel_id, edge_width, bounding_box, ax):
     ax.set_xticks([])
     ax.set_yticks([])
     sns.despine(ax=ax, top=True, bottom=True, left=True, right=True)
-    ax.annotate(layer_name, xy=[0.2, 0.95], xycoords='axes fraction')
     ax.annotate(panel_id, xy=[0.05, 0.95], xycoords='axes fraction',
                 fontsize=PANEL_FONT_SIZE, weight=PANEL_FONT_WEIGHT)
 

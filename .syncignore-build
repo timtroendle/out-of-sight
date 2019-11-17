@@ -1,4 +1,5 @@
 # build files to ignore when receiving from Euler
 raw-wdpa-*/
-capacityfactors/
+capacityfactors/*.nc
 esm
+buffered-buildings*.tif

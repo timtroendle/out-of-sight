@@ -33,7 +33,7 @@ administrative_borders_lau:
     runtime: 60
 buffer_buildings_high_resolution:
     memory: 80000
-    runtime: 30
+    runtime: 120
 buffer_buildings_in_europe:
     memory: 128000
     runtime: 120

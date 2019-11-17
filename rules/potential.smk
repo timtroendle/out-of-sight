@@ -91,7 +91,7 @@ rule electricity_yield_of_technical_eligibility:
 
 rule buffer_buildings_high_resolution:
     message:
-        "Buffer buildings of cell N{wildcards.north}E{wildcards.east} using squared distance of {wildcards.distance} m."
+        "Buffer buildings of cell N{wildcards.north}E{wildcards.east} using distance of {wildcards.distance} m."
     input:
         src = "src/buffer_buildings.py",
         esm = "build/esm/200km_2p5m_N{north}E{east}_filtered.tif"
