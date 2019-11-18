@@ -9,9 +9,9 @@ import matplotlib.pyplot as plt
 RED = "#A01914"
 BLUE = "#4F6DB8"
 GREY = "#C0C0C0"
-BLUE_TO_RED = [ # from https://gka.github.io using lightness correction
-    '#002d6e', '#375aa2', '#6f8ad1', '#a7bffa',
-    '#f5f5f5', '#fdad97', '#e36b55', '#b23125', '#720000'
+BLUE_TO_RED = [ # https://vis4.net/palettes/#/9|d|002d6e,a7bffa,ffffbf|ffffbf,fdad97,720000|1|0
+    '#002d6e', '#375d9c', '#708fcc', '#adc4f6',
+    '#ffffbf', '#fdb49a', '#d3796a', '#a64038', '#720000'
 ]
 BLUE_TO_RED.reverse()
 CMAP = matplotlib.colors.LinearSegmentedColormap.from_list("signature-BlRd", BLUE_TO_RED)
@@ -142,7 +142,7 @@ def plot_colorbar(fig, axes):
     cbar.set_ticks([0, 0.25, 0.5, 0.75, 1])
     cbar.set_ticklabels(["0%", "25%", "50%", "75%", "100%"])
     cbar.outline.set_linewidth(0)
-    cbar.ax.set_ylabel('Verbleibendes Windpotenzials bei \n1000m Abstand im Vergleich zu 600m', rotation=90)
+    cbar.ax.set_ylabel('Verbleibendes Windpotenzial bei \n1000m Abstand im Vergleich zu 600m', rotation=90)
 
 
 if __name__ == "__main__":
