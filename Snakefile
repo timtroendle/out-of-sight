@@ -33,7 +33,8 @@ rule all:
     message: "Run entire analysis and compile report."
     input:
         rules.wind_capacity_per_distance_plot.output,
-        rules.wind_capacity_per_distance_map.output
+        rules.wind_capacity_per_distance_map.output,
+        rules.historic_capacity_expansion_wind.output
 
 
 GENERAL_DOCUMENT_DEPENDENCIES = [

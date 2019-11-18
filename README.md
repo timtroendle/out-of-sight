@@ -29,6 +29,7 @@ Whenever possible, data is downloaded automatically. As this is not always possi
 * [European Settlement Map 2012, Release 2017, 100m](https://land.copernicus.eu/pan-european/GHSL/european-settlement-map), to be placed at `./data/esm-100m-2017/`
 * [European Settlement Map 2012, Release 2017, 2.5m](https://land.copernicus.eu/pan-european/GHSL/european-settlement-map) (all tiles covering Germany), to be placed at `./data/esm/`
 * [World Exclusive Economic Zones v10](http://www.marineregions.org/downloads.php), to be placed in `./data/World_EEZ_v10_20180221`
+* [Onshore wind capacity expansion for Germany from Bundesverband WindEnergie](https://www.wind-energie.de/themen/zahlen-und-fakten/deutschland/), to be placed in `./data/installierte-windenergieleistung-in-deutschland.csv`
 * capacity factors from renewable.ninja, to be placed in `./data/capacityfactors/{technology}.nc` for technology in ["wind-onshore", "wind-offshore", "rooftop-pv", "open-field-pv"] (where "open-field-pv" and "rooftop-pv" can be the same dataset and hence can be linked instead of copied)(to run simulations, see `Manual steps` below)
 
 ## Run the analysis

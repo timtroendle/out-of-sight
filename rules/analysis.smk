@@ -1,5 +1,7 @@
 """Rules analysing the scenario results."""
 
+ONSHORE_WIND_CAPACITY_EXPANSION = "data/installierte-windenergieleistung-in-deutschland.csv"
+
 
 wildcard_constraints:
     plot_suffix = "((png)|(tif))" # can plot tif or png
@@ -148,6 +150,16 @@ rule scenario_overview:
                                                      population.loc[affected].groupby("layer").population_sum.sum() * 100).reindex(ALL_LAYERS)
 
         overview.fillna(0).transpose().to_csv(output[0], index=True, header=True, float_format="%.1f")
+
+
+rule historic_capacity_expansion_wind:
+    message: "Visualise the historic capacity expansion of onshore wind in Germany."
+    input:
+        src = "src/vis/capacity_expansion.py",
+        winddata = ONSHORE_WIND_CAPACITY_EXPANSION
+    output: "build/historic-wind-capacity-expansion.png",
+    conda: "../envs/default.yaml"
+    script: "../src/vis/capacity_expansion.py"
 
 
 rule wind_capacity_per_distance_plot:
