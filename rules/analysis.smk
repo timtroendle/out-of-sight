@@ -173,7 +173,8 @@ rule wind_capacity_per_distance_plot:
             distance=[600, 800, 1000, 1200]
         )
     output:
-        "build/wind-capacity-per-distance.png"
+        plot = "build/wind-capacity-per-distance.png",
+        data = "build/wind-capacity-per-distance.csv"
     conda: "../envs/default.yaml"
     script: "../src/vis/wind_capacity.py"
 

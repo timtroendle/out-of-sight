@@ -6,7 +6,7 @@ RED = "#A01914"
 BLUE = "#4F6DB8"
 
 
-def plot_wind_capacity_per_distance(paths_to_results, path_to_plot):
+def plot_wind_capacity_per_distance(paths_to_results, path_to_plot, path_to_data):
     sns.set_context('paper')
     data = pd.DataFrame.from_records(
         columns=["potential_type", "distance_m", "onshore_potential_gw"],
@@ -34,6 +34,7 @@ def plot_wind_capacity_per_distance(paths_to_results, path_to_plot):
     ax.set_xlabel("Mindestabstand (m)")
     ax.set_ylabel("Technisches Potenzial (GW)")
     fig.savefig(path_to_plot, dpi=600, transparent=False)
+    pd.concat([data, data2, data3]).to_csv(path_to_data, index=False, header=True)
 
 
 def pottype(path_to_result):
@@ -55,5 +56,6 @@ def potential_gw(path_to_result):
 if __name__ == "__main__":
     plot_wind_capacity_per_distance(
         paths_to_results=snakemake.input.results,
-        path_to_plot=snakemake.output[0]
+        path_to_plot=snakemake.output.plot,
+        path_to_data=snakemake.output.data
     )
