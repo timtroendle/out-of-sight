@@ -12,10 +12,9 @@ rule export_map_data:
         "build/export/map/national-boundaries-national-level.shp",
         "build/export/map/national-boundaries-regional-level.shp",
         "build/export/map/national-boundaries-municipal-level.shp",
-        "build/export/map/continental--technical-social-potential.mbtiles",
-        "build/export/map/national--technical-social-potential.mbtiles",
-        "build/export/map/regional--technical-social-potential.mbtiles",
-        "build/export/map/municipal--technical-social-potential.mbtiles",
+        "build/export/map/national--technical-potential-env-protection-all-distances.mbtiles",
+        "build/export/map/regional--technical-potential-env-protection-all-distances.mbtiles",
+        "build/export/map/municipal--technical-potential-env-protection-all-distances.mbtiles",
 
 
 rule national_boundaries:
@@ -30,46 +29,52 @@ rule national_boundaries:
 
 
 rule scenario_result:
-    message: "Export data of {wildcards.layer} layer together with our rating of possibility."
+    message: "Export data of {wildcards.layer} layer and all distances."
     input:
-        technical_potential = "build/{layer}/technical-potential/merged-results.gpkg",
-        technical_social_potential = "build/{layer}/technical-social-potential/merged-results.gpkg",
-    output: "build/export/map/{layer}--technical-social-potential.geojson"
+        potential_600 = "build/{layer}/technical-potential-env-protection/600/capacities.csv",
+        potential_800 = "build/{layer}/technical-potential-env-protection/800/capacities.csv",
+        potential_1000 = "build/{layer}/technical-potential-env-protection/1000/capacities.csv",
+        potential_1200 = "build/{layer}/technical-potential-env-protection/1200/capacities.csv",
+        units = "build/{layer}/units.geojson"
+    output: "build/export/map/{layer}--technical-potential-env-protection-all-distances.geojson"
     run:
         import pandas as pd
         import geopandas as gpd
 
-        technical_potential = (gpd
-                               .read_file(input.technical_potential)
-                               .rename(columns={"id": "unit_id"})
-                               .set_index("unit_id"))
-        technical_social_potential = (gpd
-                                      .read_file(input.technical_social_potential)
-                                      .rename(columns={"id": "unit_id"})
-                                      .set_index("unit_id"))
+        def read_wind_potential(path_to_potential):
+            pot = (
+                pd
+                .read_csv(path_to_potential)
+                .rename(columns={"id": "unit_id"})
+                .set_index("unit_id")
+                .loc[:, "onshore_wind_mw"]
+            )
+            pot[pot < 1] = 0 # neglect potentials below 1 MW
+            return pot / 8 * 10 # from 8 MW/km2 to 10 MW/km2
 
-        def our_rating(technical_potential, technical_social_potential):
-            rating = pd.Series(index=technical_social_potential.index, data=None, dtype=pd.np.object)
-            rating[technical_social_potential >= 1] = "is likely possible"
-            rating[(technical_social_potential < 1)
-                   & (technical_potential >= 2)] = "is maybe possible"
-            rating[(technical_social_potential < 1)
-                   & (technical_potential < 2)
-                   & (technical_potential >= 1)] = "is likely impossible"
-            rating[technical_potential < 1] = "is impossible"
-            return rating
+        potential_1200 = read_wind_potential(input.potential_1200)
+        potential_1000 = read_wind_potential(input.potential_1000)
+        potential_800 = read_wind_potential(input.potential_800)
+        potential_600 = read_wind_potential(input.potential_600)
 
-        technical_social_potential["our_rating"] = our_rating(
-            technical_potential=technical_potential["normed_potential"],
-            technical_social_potential=technical_social_potential["normed_potential"]
+        potential = pd.DataFrame(
+            index=potential_600.index,
+            data={
+                "onshore_wind_mw_600": potential_600,
+                "onshore_wind_mw_800": potential_800,
+                "onshore_wind_mw_1000": potential_1000,
+                "onshore_wind_mw_1200": potential_1200,
+                "onshore_wind_rel_1000_to_600": potential_1000 / potential_600
+            }
         )
-        technical_social_potential["total_potential_twh_per_year"] = (
-            technical_social_potential["offshore_wind_twh_per_year"]
-            + technical_social_potential["onshore_wind_twh_per_year"]
-            + technical_social_potential["rooftop_pv_twh_per_year"]
-            + technical_social_potential["open_field_pv_twh_per_year"]
+
+        (
+            gpd
+            .read_file(input.units)
+            .merge(potential, left_on="id", right_index=True)
+            .replace("Germany", "Deutschland")
+            .to_file(output[0], driver="GeoJSON")
         )
-        technical_social_potential.to_file(output[0], driver="GeoJSON")
 
 
 def zoom_range_parameters(wildcards):
@@ -79,7 +84,7 @@ def zoom_range_parameters(wildcards):
     elif "national" in filename:
         return "-Z3 -z6"
     elif "regional" in filename:
-        return "-Z6 -z9"
+        return "-Z5 -z9"
     elif "municipal" in filename:
         return "-Z9 -z12"
     else:

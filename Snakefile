@@ -11,6 +11,7 @@ include: "rules/capacityfactors.smk"
 include: "rules/potential.smk"
 include: "rules/analysis.smk"
 include: "rules/publish-data.smk"
+include: "rules/export-map-data.smk"
 include: "rules/sync.smk"
 
 localrules: all, paper, clean
