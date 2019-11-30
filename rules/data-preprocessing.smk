@@ -33,7 +33,7 @@ localrules: raw_load, raw_gadm_administrative_borders_zipped, raw_protected_area
     raw_nuts_units_zipped, raw_lau_units_zipped, raw_urbanisation_zipped, raw_land_cover_zipped,
     raw_land_cover, raw_protected_areas, raw_srtm_elevation_tile_zipped, raw_gmted_elevation_tile,
     raw_bathymetry_zipped, raw_bathymetry, raw_population_zipped, raw_population,
-    raw_gadm_administrative_borders
+    raw_gadm_administrative_borders, download_windturbines_from_esm
 
 
 rule raw_load:
@@ -389,11 +389,30 @@ rule settlements:
         """
 
 
-rule filter_2p5m_esm:
+rule download_windturbines_from_esm:
+    message: "Download all German windturbines from ESM."
+    input: src = "src/download_windturbines.py"
+    output: "build/osm-windturbines.json"
+    conda: "../envs/default.yaml"
+    script: "../src/download_windturbines.py"
+
+
+rule filter_windturbines_2p5m_esm:
+    message: "Filter wind turbines from ESM N{wildcards.north}E{wildcards.east}."
+    input:
+        src = "src/filter_windturbines.py",
+        esm = "data/esm/200km_2p5m_N{north}E{east}/200km_2p5m_N{north}E{east}.TIF",
+        turbines = rules.download_windturbines_from_esm.output[0]
+    output: temporary("build/esm/200km_2p5m_N{north}E{east}_no_wind.tif")
+    conda: "../envs/default.yaml"
+    script: "../src/filter_windturbines.py"
+
+
+rule filter_glitches_2p5m_esm:
     message: "Filter incorrectly identified buildings in ESM N{wildcards.north}E{wildcards.east}."
     input:
         src = "src/filter_esm.py",
-        esm = "data/esm/200km_2p5m_N{north}E{east}/200km_2p5m_N{north}E{east}.TIF"
+        esm = "build/esm/200km_2p5m_N{north}E{east}_no_wind.tif"
     output: "build/esm/200km_2p5m_N{north}E{east}_filtered.tif"
     conda: "../envs/default.yaml"
     script: "../src/filter_esm.py"
